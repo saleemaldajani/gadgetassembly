@@ -25,3 +25,7 @@ An interactive web app for exploring spiky ring (shuriken) geometries, powered b
 ---
 
 Enjoy exploring your geometric shuriken patterns!
+
+
+Ethical AI use statement:
+https://chatgpt.com/share/6803a55e-23e4-8008-9401-42ddc37735da
