@@ -23,52 +23,55 @@ gadget_coords = [
     [113.43691588785049, 102.35747663551399]
 ]
 
-# Create a Shapely polygon for the gadget
 gadget_centered = Polygon(gadget_coords)
 
-# Initialize the Dash app
+# Initialize Dash app
 app = dash.Dash(__name__)
 
-# App layout
+# Layout
 app.layout = html.Div([
     html.H2("Geometric Assembly Shuriken Design Generator", style={'textAlign': 'center'}),
     html.P("Adjust the sliders to explore unique geometric patterns.", style={'textAlign': 'center'}),
     dcc.Graph(id='shuriken-graph'),
 
-    # Sliders
     html.Div([
         html.Div([
             html.Label('n: Number of gadgets'),
-            dcc.Slider(id='n-slider', min=1, max=128, step=1, value=32)
-        ], style={'flex': '1', 'padding': '0 10px'}),
+            dcc.Slider(id='n-slider', min=1, max=128, step=1, value=32, updatemode='drag')
+        ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'}),
 
         html.Div([
             html.Label('R: Radius'),
-            dcc.Slider(id='R-slider', min=50, max=400, step=10, value=200)
-        ], style={'flex': '1', 'padding': '0 10px'}),
-
-        html.Div([
-            html.Label('s₁: Primary scale'),
-            dcc.Slider(id='s1-slider', min=0.1, max=3.0, step=0.1, value=1.0)
-        ], style={'flex': '1', 'padding': '0 10px'})
+            dcc.Slider(id='R-slider', min=50, max=400, step=10, value=200, updatemode='drag')
+        ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'})
     ], style={'display': 'flex', 'marginTop': '20px'}),
 
     html.Div([
         html.Div([
+            html.Label('s₁: Primary scale'),
+            dcc.Slider(id='s1-slider', min=0.1, max=3.0, step=0.1, value=1.0, updatemode='drag')
+        ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'}),
+
+        html.Div([
             html.Label('s₂: Secondary scale'),
-            dcc.Slider(id='s2-slider', min=0.1, max=3.0, step=0.1, value=1.0)
-        ], style={'flex': '1', 'padding': '0 10px'}),
+            dcc.Slider(id='s2-slider', min=0.1, max=3.0, step=0.1, value=1.0, updatemode='drag')
+        ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'}),
 
         html.Div([
             html.Label('cells: Gadget count'),
-            dcc.Slider(id='cells-slider', min=1, max=2, step=1, value=1)
-        ], style={'flex': '1', 'padding': '0 10px'}),
+            dcc.Slider(id='cells-slider', min=1, max=2, step=1, value=1, updatemode='drag')
+        ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'}),
 
         html.Div([
             html.Label('ΔR: Radius offset'),
-            dcc.Slider(id='delta-slider', min=-100, max=100, step=5, value=0)
-        ], style={'flex': '1', 'padding': '0 10px'})
-    ], style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '40px'})
+            dcc.Slider(id='delta-slider', min=-100, max=100, step=5, value=0, updatemode='drag')
+        ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'})
+    ], style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '40px'}),
+
+    html.P(
+        "Interactive geometric assembly shuriken design generator, inspired by computational geometry",
+        style={'textAlign': 'center', 'fontStyle': 'italic', 'marginTop': '20px'}
+    )
 ], style={'maxWidth': '900px', 'margin': 'auto'})
 
 
@@ -78,28 +81,25 @@ def make_traces(n, R, s1, s2, cells, delta):
     for i in range(n):
         base_angle = i * angle_step
         θ = np.deg2rad(base_angle)
-        # primary gadget
         p1 = shapely_scale(gadget_centered, xfact=s1, yfact=s1, origin=(0,0))
-        px, py = R*np.cos(θ), R*np.sin(θ)
+        px, py = R * np.cos(θ), R * np.sin(θ)
         p1 = translate(p1, xoff=px, yoff=py)
-        p1 = rotate(p1, base_angle, origin=(px,py))
+        p1 = rotate(p1, base_angle, origin=(px, py))
         x1_arr, y1_arr = p1.exterior.xy
-        x1 = list(x1_arr)
-        y1 = list(y1_arr)
-        traces.append(go.Scatter(x=x1, y=y1, fill='toself', fillcolor='black', line=dict(color='black'), mode='lines'))
+        x1, y1 = list(x1_arr), list(y1_arr)
+        traces.append(go.Scatter(x=x1, y=y1, fill='toself', mode='lines'))
 
         if cells == 2:
             half_angle = base_angle + angle_step/2
             θ2 = np.deg2rad(half_angle)
             r2 = R + delta
-            px2, py2 = r2*np.cos(θ2), r2*np.sin(θ2)
+            px2, py2 = r2 * np.cos(θ2), r2 * np.sin(θ2)
             p2 = shapely_scale(gadget_centered, xfact=s2, yfact=s2, origin=(0,0))
             p2 = translate(p2, xoff=px2, yoff=py2)
-            p2 = rotate(p2, half_angle, origin=(px2,py2))
+            p2 = rotate(p2, half_angle, origin=(px2, py2))
             x2_arr, y2_arr = p2.exterior.xy
-            x2 = list(x2_arr)
-            y2 = list(y2_arr)
-            traces.append(go.Scatter(x=x2, y=y2, fill='toself', fillcolor='gray', line=dict(color='gray'), mode='lines'))
+            x2, y2 = list(x2_arr), list(y2_arr)
+            traces.append(go.Scatter(x=x2, y=y2, fill='toself', mode='lines', fillcolor='gray', line=dict(color='gray')))
     return traces
 
 @app.callback(
@@ -122,7 +122,7 @@ def update_graph(n, R, s1, s2, cells, delta):
         plot_bgcolor='white',
         paper_bgcolor='white',
         dragmode=False,
-        height=700,
+        height=700
     )
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     return fig
