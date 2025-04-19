@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from shapely.geometry import Polygon
 from shapely.affinity import translate, rotate, scale as shapely_scale
@@ -6,7 +7,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 
-# 1) Centered gadget polygon coordinates
+# Centered gadget polygon coordinates
 gadget_coords = [
     [-137.5630841121495, -198.642523364486],
     [111.43691588785049, 102.35747663551399],
@@ -35,8 +36,8 @@ app.layout = html.Div([
     html.P("Adjust the sliders to explore unique geometric patterns.", style={'textAlign': 'center'}),
     dcc.Graph(id='shuriken-graph'),
 
+    # Slider rows
     html.Div([
-        # First row of sliders
         html.Div([
             html.Label('n: Number of gadgets'),
             dcc.Slider(
@@ -59,7 +60,6 @@ app.layout = html.Div([
     ], style={'display': 'flex', 'marginTop': '20px'}),
 
     html.Div([
-        # Second row of sliders
         html.Div([
             html.Label('s₁: Primary scale'),
             dcc.Slider(
@@ -99,14 +99,14 @@ app.layout = html.Div([
                 updatemode='drag'
             )
         ], style={'flex': '1', 'margin': '0 10px 20px', 'display': 'flex', 'flexDirection': 'column'})
-    ], style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '40px'}),
+    ], style={'display': 'flex', 'marginTop': '10px', 'marginBottom': '36px'}),
 
     # Footer note
     html.P(
         "Interactive geometric assembly shuriken design generator, inspired by computational geometry",
         style={'textAlign': 'center', 'fontStyle': 'italic', 'marginTop': '20px'}
     )
-], style={'maxWidth': '900px', 'margin': 'auto'})
+], style={'maxWidth': '810px', 'margin': 'auto'})
 
 
 def make_traces(n, R, s1, s2, cells, delta):
@@ -115,6 +115,7 @@ def make_traces(n, R, s1, s2, cells, delta):
     for i in range(n):
         base_angle = i * angle_step
         θ = np.deg2rad(base_angle)
+        # primary gadget
         p1 = shapely_scale(gadget_centered, xfact=s1, yfact=s1, origin=(0, 0))
         px, py = R * np.cos(θ), R * np.sin(θ)
         p1 = translate(p1, xoff=px, yoff=py)
@@ -151,17 +152,19 @@ def update_graph(n, R, s1, s2, cells, delta):
     for trace in make_traces(n, R, s1, s2, cells, delta):
         fig.add_trace(trace)
     fig.update_layout(
+        showlegend=False,
         xaxis=dict(visible=False),
         yaxis=dict(visible=False),
         margin=dict(l=0, r=0, t=0, b=0),
         plot_bgcolor='white',
         paper_bgcolor='white',
         dragmode='pan',
-        height=700
+        height=630
     )
     fig.update_yaxes(scaleanchor="x", scaleratio=1)
     return fig
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8050, debug=True)
+    port = int(os.environ.get("PORT", 8050))
+    app.run(host='0.0.0.0', port=port, debug=False)
