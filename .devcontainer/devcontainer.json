@@ -1,0 +1,11 @@
+{
+    "name": "Shuriken Design Generator",
+    "build": { "dockerfile": "Dockerfile" },
+    "settings": {
+      "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+      "ms-python.python"
+    ],
+    "forwardPorts": [8050]
+  }
