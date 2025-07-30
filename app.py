@@ -105,12 +105,17 @@ def make_traces(n, R, s1, s2, cells, tau, delta):
         base_angle = i * angle_step
         θ1 = np.deg2rad(base_angle)
 
-        # Primary gadget (white fill, black border)
+        # Primary gadget
         p1 = shapely_scale(gadget_centered, xfact=s1, yfact=s1, origin=(0, 0))
         p1 = rotate(p1, base_angle, origin=(0, 0))
         p1 = translate(p1, xoff=R * np.cos(θ1), yoff=R * np.sin(θ1))
-        x1, y1 = p1.exterior.xy
-        traces.append(go.Scatter(x=x1, y=y1, fill='toself', fillcolor='white', line=dict(color='black'), mode='lines'))
+
+        if not p1.is_empty and p1.exterior:
+            x1, y1 = map(np.array, p1.exterior.xy)
+            traces.append(go.Scatter(
+                x=x1.tolist(), y=y1.tolist(), fill='toself',
+                fillcolor='white', line=dict(color='black'), mode='lines'
+            ))
 
     if cells == 2:
         for i in range(n):
@@ -122,8 +127,13 @@ def make_traces(n, R, s1, s2, cells, tau, delta):
             p2 = shapely_scale(gadget_centered, xfact=s2, yfact=s2, origin=(0, 0))
             p2 = rotate(p2, base_angle, origin=(0, 0))
             p2 = translate(p2, xoff=r2 * np.cos(θ2), yoff=r2 * np.sin(θ2))
-            x2, y2 = p2.exterior.xy
-            traces.append(go.Scatter(x=x2, y=y2, fill='toself', fillcolor='black', line=dict(color='black'), mode='lines'))
+
+            if not p2.is_empty and p2.exterior:
+                x2, y2 = map(np.array, p2.exterior.xy)
+                traces.append(go.Scatter(
+                    x=x2.tolist(), y=y2.tolist(), fill='toself',
+                    fillcolor='black', line=dict(color='black'), mode='lines'
+                ))
 
     return traces
 
